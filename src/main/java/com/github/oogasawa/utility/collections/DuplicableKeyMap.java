@@ -1,52 +1,31 @@
 package com.github.oogasawa.utility.collections;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
 
 //import com.github.oogasawa.utility.files.FileIO;
 
-public class DuplicableKeyUniqueValueHashMap <K,V> implements Cloneable, Serializable {
+
+public class DuplicableKeyMap<K,V> implements Cloneable, Serializable {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5657223371908240636L;
-	HashMap<K,TreeSet<V>> entity = new HashMap<K, TreeSet<V>>();
+	TreeMap<K,ArrayList<V>> entity = new TreeMap<K, ArrayList<V>>();
 	
+	public ArrayList<V> getValueList(Object key) {
+		return entity.get(key);
+	}
 
-	
-	// public void save(String filename, String delim) throws IOException {
-	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
 
-	// 	Set<K> keys = entity.keySet();
-	// 	for (K k : keys) {
-	// 		Object[] array = entity.get(k).toArray();
-	// 		String[] s = ArrayUtil.toStringArray(array);
-	// 		String str = ArrayUtil.join(delim, ArrayUtil.sort(s));
-	// 		pw.println(k + "\t" + str);
-	// 	}
-	// 	pw.close();
-	// }
+	public V get(Object key) {
+		return entity.get(key).get(0);
+	}
 
-	// public void save(String filename) throws IOException {
-	//
-	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
-	// 	Set<K> keys = entity.keySet();
-	// 	for (K k : keys) {
-	// 		for (V v : entity.get(k)) {
-	// 			pw.println(k + "\t" + v);				
-	// 		}
-	// 	}	
-	// 	pw.close();
-	// }
-	
 	
 	public void put(K key, V value) {
 		
@@ -54,12 +33,37 @@ public class DuplicableKeyUniqueValueHashMap <K,V> implements Cloneable, Seriali
 			entity.get(key).add(value);
 		}
 		else {
-			TreeSet<V> valList = new TreeSet<V>();
+			ArrayList<V> valList = new ArrayList<V>();
 			valList.add(value);
 			entity.put(key, valList);
 		}
 		
 	}
+
+
+	// public void save(String filename, String delim) throws IOException {
+	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
+
+	// 	Set<K> keys = entity.keySet();
+	// 	for (K k : keys) {
+	// 		String str = ListUtil.join(delim, entity.get(k));
+	// 		pw.println(k + "\t" + str);
+	// 	}
+	// 	pw.close();
+	// }
+
+
+	// public void save(String filename) throws IOException {
+	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
+
+	// 	Set<K> keys = entity.keySet();
+	// 	for (K k : keys) {
+	// 		for (V v : entity.get(k)) {
+	// 			pw.println(k + "\t" + v);				
+	// 		}
+	// 	}		
+	// 	pw.close();
+	// }
 
 
 	public void clear() {
@@ -74,36 +78,23 @@ public class DuplicableKeyUniqueValueHashMap <K,V> implements Cloneable, Seriali
 
 	@SuppressWarnings("unchecked")
 	public boolean containsValue(Object val) {
-
-		Iterator<?> sIter = keySet().iterator();
+		Set<?> s = keySet();
+		Iterator<?> sIter = s.iterator();
 		K key = null;
-		TreeSet<V> valSet = null;
+		ArrayList<V> valList = null;
 		while (sIter.hasNext()) {
 			key = (K) sIter.next();
-			valSet = entity.get(key);
-			if (valSet.contains(val)) {
-				return true;
+			valList = entity.get(key);
+			for (int i=0; i<valList.size(); i++) {
+				if (valList.get(i).equals(val))
+					return true;
 			}
 		}
 		return false;
 	}
 
 
-	public V get(Object key) {
-		return entity.get(key).first();
-	}
 
-	
-	public ArrayList<V> getValueList(Object key) {
-		// convert TreeSet to ArrayList
-		ArrayList<V> result = this.entity.get(key)
-			.stream()
-			.collect(Collectors.toCollection(ArrayList::new));
-
-		return result;
-	}
-
-	
 	public boolean isEmpty() {
 		return entity.isEmpty();
 	}
@@ -120,6 +111,27 @@ public class DuplicableKeyUniqueValueHashMap <K,V> implements Cloneable, Seriali
 		return entity.size();
 	}
 
+/*
+	@SuppressWarnings("unchecked")
+	public int numOfValueColumns() {
+		Set<?> ks = keySet();
+		Iterator<?> iter = ks.iterator();
+		K        key  = (K) iter.next();
+		String   val  = entity.get(key).get(0).toString();
+		ArrayList<String> cols = StringUtil.splitByTab(val);
+		
+		return cols.size();
+	}
+*/
+	
+	public void print() {
+		Set<K> keys = entity.keySet();
+		for (K k : keys) {
+			for (V v : entity.get(k)) {
+				System.out.println(k + "\t" + v);				
+			}
+		}		
+	}
 	/*
 	public <V> Collection<V> values() {
 		ArrayList<V> valList = new ArrayList<V>();

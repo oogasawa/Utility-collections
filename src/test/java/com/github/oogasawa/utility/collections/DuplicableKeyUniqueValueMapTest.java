@@ -17,16 +17,16 @@ import org.slf4j.LoggerFactory;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class DuplicableKeyHashMapTest {
+public class DuplicableKeyUniqueValueMapTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DuplicableKeyHashMapTest.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DuplicableKeyUniqueValueMapTest.class.getName());
 
     
     @Test
     @Order(1)
     public void testPut() {
 
-        DuplicableKeyHashMap<String, String> map = new DuplicableKeyHashMap<>();
+        DuplicableKeyUniqueValueMap<String, String> map = new DuplicableKeyUniqueValueMap<>();
 
         map.put("M12674", "taxon:9606");
         map.put("M12674", "taxon:0000");
@@ -36,7 +36,7 @@ public class DuplicableKeyHashMapTest {
         ArrayList<String> values = map.getValueList("M12674");
         assertTrue(values.contains("taxon:9606"));
         assertTrue(values.contains("taxon:0000"));
-        assertEquals(3, values.size());
+        assertEquals(2, values.size());
     }
 
 
