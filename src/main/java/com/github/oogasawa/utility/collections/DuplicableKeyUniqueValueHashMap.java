@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 //import com.github.oogasawa.utility.files.FileIO;
 
-public class DuplicatedKeyUniqueValueHashMap <K,V> implements Cloneable, Serializable {
+public class DuplicableKeyUniqueValueHashMap <K,V> implements Cloneable, Serializable {
 	
 	/**
 	 * 
@@ -35,6 +36,7 @@ public class DuplicatedKeyUniqueValueHashMap <K,V> implements Cloneable, Seriali
 	// }
 
 	// public void save(String filename) throws IOException {
+	//
 	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
 	// 	Set<K> keys = entity.keySet();
 	// 	for (K k : keys) {
@@ -87,19 +89,21 @@ public class DuplicatedKeyUniqueValueHashMap <K,V> implements Cloneable, Seriali
 	}
 
 
-	public TreeSet<V> get(Object key) {
-		return entity.get(key);
+	public V get(Object key) {
+		return entity.get(key).first();
 	}
+
 	
 	public ArrayList<V> getValueList(Object key) {
-		ArrayList<V> result = new ArrayList<V>();
-		TreeSet<V> set = get(key);
-		for (V val : set) {
-			result.add(val);
-		}
+		// convert TreeSet to ArrayList
+		ArrayList<V> result = this.entity.get(key)
+			.stream()
+			.collect(Collectors.toCollection(ArrayList::new));
+
 		return result;
 	}
 
+	
 	public boolean isEmpty() {
 		return entity.isEmpty();
 	}

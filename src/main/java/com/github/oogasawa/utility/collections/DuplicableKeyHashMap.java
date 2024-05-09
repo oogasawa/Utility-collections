@@ -17,10 +17,16 @@ public class DuplicableKeyHashMap<K,V> implements Cloneable, Serializable {
 	private static final long serialVersionUID = 5657223371908240636L;
 	TreeMap<K,ArrayList<V>> entity = new TreeMap<K, ArrayList<V>>();
 	
-	public ArrayList<V> get(Object key) {
+	public ArrayList<V> getValueList(Object key) {
 		return entity.get(key);
 	}
 
+
+	public V get(Object key) {
+		return entity.get(key).get(0);
+	}
+
+	
 	public void put(K key, V value) {
 		
 		if (entity.containsKey(key)) {
