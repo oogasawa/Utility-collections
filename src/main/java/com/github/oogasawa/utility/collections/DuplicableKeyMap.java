@@ -3,11 +3,15 @@ package com.github.oogasawa.utility.collections;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 //import com.github.oogasawa.utility.files.FileIO;
-
 
 public class DuplicableKeyMap<K,V> implements Cloneable, Serializable {
 	
@@ -15,15 +19,39 @@ public class DuplicableKeyMap<K,V> implements Cloneable, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5657223371908240636L;
-	TreeMap<K,ArrayList<V>> entity = new TreeMap<K, ArrayList<V>>();
+	TreeMap<K,List<V>> entity = new TreeMap<K, List<V>>();
+
 	
-	public ArrayList<V> getValueList(Object key) {
+	/** Returns a list of values corresponding to keys.
+	 * 
+	 *  @param key A key.
+	 *  @return A list of values corresponding to the key. If the key does not exist, return null. 
+	 */
+	public List<V> getValueList(K key) {
 		return entity.get(key);
 	}
 
 
-	public V get(Object key) {
-		return entity.get(key).get(0);
+	/** Returns one value corresponding to key.
+	 *  <p>
+	 *  If multiple values correspond to a key, return any one of the corresponding values.
+	 *  It is not specified which value is returned.
+	 *  </p>
+	 *  
+	 *  @param key A key.
+	 *  @return A value corresponding to the key. 
+	 *  @exception RuntimeException If the key does not exist.
+	 * 
+	 */
+	public V get(K key) {
+		V value = null;
+		try {
+			value = entity.get(key).get(0);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Key not found: " + key);
+		}
+		return value;
 	}
 
 	
@@ -40,6 +68,50 @@ public class DuplicableKeyMap<K,V> implements Cloneable, Serializable {
 		
 	}
 
+	/** Puts key-value pairs in the map, however, if the exact same key-value pair is already in the map, it is not put.
+	 *
+	 * <h4>Boundary condition</h4>
+	 * <ul>
+	 * <li>If key is null, it throws a NullPointerException.</li>
+	 * <li>If value is null, it throws a NullPointerException.</li>
+	 * </ul>
+	 * 
+	 * @param key A key.
+	 * @param value A value.
+	 * @exception NullPointerException If key or value is null.
+	 */
+	public void putUniquePair(K key, V value) {
+
+		if (key == null) {
+			throw new NullPointerException("Key is null.");
+		}
+		if (value == null) {
+			throw new NullPointerException("Value is null.");
+		}
+		
+		if (entity.containsKey(key)) {
+			List<V> valList = entity.get(key);
+			if (!valList.contains(value)) {
+				valList.add(value);
+			}
+		}
+		else {
+			ArrayList<V> valList = new ArrayList<V>();
+			valList.add(value);
+			entity.put(key, valList);
+		}
+		
+	}
+
+
+	
+	public Set<Map.Entry<K, V>> entrySet() {
+		return entity.entrySet().stream()
+				.flatMap((Map.Entry<K, List<V>> entry) -> entry.getValue().stream()
+						.map((V value) -> new AbstractMap.SimpleEntry<K, V>(entry.getKey(), value)))
+				.collect(Collectors.toSet());
+
+	}
 
 	// public void save(String filename, String delim) throws IOException {
 	// 	PrintWriter pw = FileIO.getPrintWriter(filename);
@@ -70,18 +142,22 @@ public class DuplicableKeyMap<K,V> implements Cloneable, Serializable {
 		entity.clear();
 	}
 
+	public void close() {
+		entity.clear();
+	}
 
-	public boolean containsKey(Object key) {
+	
+	public boolean containsKey(K key) {
 		return entity.containsKey(key);
 	}
 
 
 	@SuppressWarnings("unchecked")
-	public boolean containsValue(Object val) {
+	public boolean containsValue(V val) {
 		Set<?> s = keySet();
 		Iterator<?> sIter = s.iterator();
 		K key = null;
-		ArrayList<V> valList = null;
+		List<V> valList = null;
 		while (sIter.hasNext()) {
 			key = (K) sIter.next();
 			valList = entity.get(key);
